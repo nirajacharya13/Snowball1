@@ -20,26 +20,29 @@ ALTER COLUMN new_vaccinations float;
 select location, date, total_cases, total_deaths,(total_deaths/total_cases)*100 as DeathPercentage
 from CovidPortfoliioP..CovidDeaths
 --where total_cases !=NULL and total_deaths != NULL
-where location = 'India'
+--where location = 'India'
 order by 1,2;
 
---Total Cases vs Population
+--Total Cases vs Population of a Particular Country
 
 select location,date, total_cases, population, (total_cases/population)*100 as CasesPercentage
 from CovidPortfoliioP..CovidDeaths
-where location='Nepal'
+where location like '%canada'
 --where total_cases not in (NULL)
 order by 1,2,5 desc;
 
--- Which country(having more than a million residents) had the highest percentage of citizens infected by covid?
+-- Which country(having more than a million residents) 
+-- had the highest percentage of citizens infected by covid?
 
-select location, max(total_cases) as HighestInfectionCount, population, max((total_cases)/population)*100 as CasesPercentage
+select location, max(total_cases) as HighestInfectionCount, 
+population, max((total_cases)/population)*100 as CasesPercentage
 from CovidPortfoliioP..CovidDeaths
 where population > 1000000
 group by location, population
 order by 4 desc;
 
-select location, max(total_cases) as HighestInfectionCount, population, max((total_cases)/population)*100 as CasesPercentage
+select location, max(total_cases) as HighestInfectionCount, 
+population, max((total_cases)/population)*100 as CasesPercentage
 from CovidPortfoliioP..CovidDeaths
 group by location, population
 order by 4 desc;
@@ -60,7 +63,8 @@ order by 2 desc
 
 
 -- Finding countries with highest death rate per population
-select location, max(total_deaths) as HighestDeathCount, population, max((total_deaths)/population)*100 as DeathPercent
+select location, max(total_deaths) as HighestDeathCount, 
+population, max((total_deaths)/population)*100 as DeathPercent
 from CovidPortfoliioP..CovidDeaths
 group by location, population
 order by 4 desc
@@ -81,7 +85,9 @@ group by date
 order by 1,2
 
 --World daily covid deaths
-select date, sum(new_cases) as Total_Cases, sum(new_deaths) as Total_Deaths, (sum(new_deaths)/sum(nullif(new_cases,0)))*100 as DeathPercentage
+select date, sum(new_cases) as Total_Cases, 
+sum(new_deaths) as Total_Deaths, 
+(sum(new_deaths)/sum(nullif(new_cases,0)))*100 as DeathPercentage
 from CovidPortfoliioP..CovidDeaths
 where continent is not null
 group by date
@@ -110,16 +116,20 @@ where dea.continent is not null
 order by 2,3
 
 --Without using Total_Vaccination column, we are going to find out the Total number of people vaccinated by location/country
---Rolling Count Column using Window Function
+--Rolling Count Column using Window Function, CTE and Temp Table
 
+With PopvsVac (continent, location, date, population, new_vaccinations,RollingPeopleVaccinated)
+as
+(
 select dea.continent,dea.location, dea.date, dea.population, vac.new_vaccinations
-,sum(vac.new_vaccinations) over (partition by dea.location order by dea.location, dea.date)
+,sum(vac.new_vaccinations/2) over (partition by dea.location order by dea.location, dea.date) as RollingPeopleVaccinated
 from CovidPortfoliioP..CovidDeaths dea
 left join CovidPortfoliioP..CovidVaccinations vac
 	on vac.location = dea.location and vac.date=dea.date
 where dea.continent is not null
-order by 2,3
+)
+select *, (RollingPeopleVaccinated/population)*100 as VaccinationPercent 
+from PopvsVac
 
---select * from CovidPortfoliioP..CovidVaccinations
---	where ROW_NUMBER() not in (select ROW_NUMBER()) from CovidPortfoliioP..CovidVaccinations)
+
 
