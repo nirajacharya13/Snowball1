@@ -116,7 +116,7 @@ where dea.continent is not null
 order by 2,3
 
 --Without using Total_Vaccination column, we are going to find out the Total number of people vaccinated by location/country
---Rolling Count Column using Window Function, CTE and Temp Table
+--Rolling Count Column using Window Function, CTE
 
 With PopvsVac (continent, location, date, population, new_vaccinations,RollingPeopleVaccinated)
 as
@@ -130,6 +130,10 @@ where dea.continent is not null
 )
 select *, (RollingPeopleVaccinated/population)*100 as VaccinationPercent 
 from PopvsVac
+
+--Temp Table
+
+
 
 
 
