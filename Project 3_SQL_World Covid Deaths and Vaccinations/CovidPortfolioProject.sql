@@ -50,16 +50,25 @@ order by 4 desc;
 --Countries with highest death count
 select location, max(total_deaths) as TotalDeathCount
 from CovidPortfoliioP..CovidDeaths
-where continent is not null
+where continent is not null and
+location not in ('World','European Union','International')
 group by location
 order by 2 desc
 
 --Highest Death count By Continent
 select continent, max(total_deaths) as TotalDeathCount
 from CovidPortfoliioP..CovidDeaths
-where continent is not null
+where continent is not null and
+location not in ('World','European Union','International')
 group by continent
 order by 2 desc
+
+--Added on July 4, 2023
+select location, population,date, max(total_cases) as HighestInfectionCount, 
+max(total_cases/population)*100 as PercentPoplationInfected
+from CovidPortfoliioP..CovidDeaths
+group by location, population,date
+order by HighestInfectionCount desc
 
 
 -- Finding countries with highest death rate per population
